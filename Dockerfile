@@ -14,6 +14,7 @@ ENV LC_ALL=fr_FR.UTF-8
 COPY config/system/locale.gen /etc/locale.gen
 COPY ./config/system/export_locale.sh /etc/profile.d/05-export_locale.sh
 COPY ./config/system/alias.sh /etc/profile.d/01-alias.sh
+COPY ./config/system/yarn_install.sh /tmp
 
 RUN apt update && apt dist-upgrade -y \
     && apt-get -y --no-install-recommends install apt-transport-https ca-certificates gnupg-agent openssl software-properties-common curl wget git sudo locales \
@@ -22,7 +23,7 @@ RUN apt update && apt dist-upgrade -y \
     && . /etc/default/locale \
     && cat /etc/profile.d/01-alias.sh >> /etc/bash.bashrc \
     && npm update -g npm \
-    && curl --compressed -o- -L https://yarnpkg.com/install.sh | bash \
+    && chmod +x /tmp/yarn_install.sh && /tmp/yarn_install.sh \
     && sed -i "s/^# *\($LOCALE\)/\1/" /etc/locale.gen \
     && locale-gen $LOCALE && update-locale \
     && usermod -u 33 -d $APPDIR www-data && groupmod -g 33 www-data \
