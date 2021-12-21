@@ -1,4 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 
-docker build --tag wyzenrepo/node16-yarn-gulp:latest .
+. config.docker
+
+TAG=${TAG:-"latest"}
+
+docker build --rm -f Dockerfile --tag "${VENDOR}/${IMAGE}:${TAG}" .
 

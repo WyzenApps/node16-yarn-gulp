@@ -4,15 +4,23 @@ LABEL Description="Node 16, Yarn 3, Gulp 4" Vendor="WYZEN Products" Version="1.0
 
 ARG GULP_CLI_VERSION=4
 ARG NPX_CLI_VERSION=10
-
 ARG APPDIR=/app
 ARG LOCALE=fr_FR.UTF-8
 ARG LC_ALL=fr_FR.UTF-8
+ARG TIMEZONE="Europe/Paris"
 ENV LOCALE=fr_FR.UTF-8
 ENV LC_ALL=fr_FR.UTF-8
 
+COPY config/system/locale.gen /etc/locale.gen
+COPY ./config/system/export_locale.sh /etc/profile.d/05-export_locale.sh
+COPY ./config/system/alias.sh /etc/profile.d/01-alias.sh
+
 RUN apt update && apt dist-upgrade -y \
-    && apt-get -y --no-install-recommends install apt-transport-https ca-certificates gnupg-agent openssl software-properties-common curl wget git sudo cron locales \
+    && apt-get -y --no-install-recommends install apt-transport-https ca-certificates gnupg-agent openssl software-properties-common curl wget git sudo locales \
+    && locale-gen $LOCALE && update-locale LANGUAGE=${LOCALE} LC_ALL=${LOCALE} LANG=${LOCALE} LC_CTYPE=${LOCALE}\
+    && ln -sf /usr/share/zoneinfo/${TIMEZONE} /etc/localtime \
+    && . /etc/default/locale \
+    && cat /etc/profile.d/01-alias.sh >> /etc/bash.bashrc \
     && npm update -g npm \
     && curl --compressed -o- -L https://yarnpkg.com/install.sh | bash \
     && sed -i "s/^# *\($LOCALE\)/\1/" /etc/locale.gen \
@@ -22,12 +30,10 @@ RUN apt update && apt dist-upgrade -y \
     && npm install -g --force npx@$NPX_CLI_VERSION \
     && yarn global add gulp-cli@$GULP_VERSION
 
-
 COPY entrypoint.sh /
 
 RUN mkdir -p /opt/ \
 && chmod +x /entrypoint.sh \
-&& echo "alias ll='ls -hal'" >> /etc/bash.bashrc \
 && apt-get clean; rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
 
 WORKDIR $APPDIR

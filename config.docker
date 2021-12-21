@@ -1,0 +1,5 @@
+VENDOR=wyzenrepo
+IMAGE=node16-yarn-gulp
+TAG=latest
+SHELL=sh
+
